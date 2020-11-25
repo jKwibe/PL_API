@@ -17,7 +17,7 @@ module Scrapper
         index.even? || index.zero?
       end
 
-      p valid_tr[0].children[5]
+      p valid_tr[0].children[7]
       #
 
       all_team_values = valid_tr.map do |child|
