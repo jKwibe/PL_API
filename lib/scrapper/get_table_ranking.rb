@@ -30,7 +30,7 @@ module Scrapper
       data = main_doc.css("ul.squadListContainer li" )
     end
 
-    private
+    # private
 
     def teams_names
       all_table_data.map do |child|

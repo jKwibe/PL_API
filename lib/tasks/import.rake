@@ -5,7 +5,6 @@ namespace :scrapper do
 
   task run_scrapper: :environment do
     scrapper = Scrapper::Scrape.new
-    p scrapper.teams_names
-    # p scrapper.fetch_table_data
+    p scrapper.fetch_team_data(7, "Everton")[0]
   end
 end
