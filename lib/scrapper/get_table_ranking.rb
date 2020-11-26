@@ -28,7 +28,7 @@ module Scrapper
         fetch_team_data(team_info[:team_id], team_info[:teams_name_slug])
       end
 
-      da = team_player_data.map do |data|
+      team_player_data.map do |data|
         data[0].map do |pl|
           plito = {}
           pl.css('a.playerOverviewCard .squadPlayerHeader').each do |player|
@@ -42,31 +42,6 @@ module Scrapper
         end.compact
       end
 
-       @da||=da
-
-      p @da.last
-      p "\n"
-      p @da.first
-
-
-      # team = {:team_id=>21, :team_name=>"Tottenham Hotspur", :teams_name_slug=>"Tottenham-Hotspur"}
-      # data = fetch_team_data(team[:team_id], team[:teams_name_slug])
-      # player_id = data.css('a .squadPlayerHeader img')[0].attributes["data-player"].value
-      # player_picture = data.css('a .squadPlayerHeader img')[0].attributes["src"].value
-      # player_name = data.css('a .squadPlayerHeader span.playerCardInfo h4.name')[0].children[0].text
-      # player_name = data.css('a .squadPlayerHeader span.playerCardInfo span.number')[0].children[0].text
-      # player_name = data.css('a .squadPlayerHeader span.playerCardInfo span.position')[0].children[0].text
-      # data[0].map do |pl|
-      #   plito = {}
-      #   pl.css('a.playerOverviewCard .squadPlayerHeader').each do |player|
-      #     # p player.css('img')[0].attributes["data-player"].value
-      #     # p player.css('span.playerCardInfo h4.name')[0].children[0].text
-      #     plito[:player_id] = player.css('img')[0].attributes["data-player"].value
-      #     plito[:player_name] = player.css('span.playerCardInfo h4.name')[0].children[0].text
-      #     plito[:team_id] = data[1]
-      #   end
-      #   plito if !plito.empty?
-      # end.compact
       end
     private
 
