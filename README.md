@@ -1,24 +1,22 @@
-# README
+### PREMIER LEAGUE SCRAPPING
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+This is a rails app which scraps data from the premier league tables, save it in a data base and save it in the database.
+The API is also responsible for sending the registered user messages about the points and position of his favorite team 
+everyday. 
 
-Things you may want to cover:
+## Technologies Used:-
+- Ruby on Rails
+- Postgresql
+- Nokogiri
 
-* Ruby version
+## Learning Goals:-
+- Understand The DOM and extract data from it.
+- Working more on active jobs
 
-* System dependencies
+## Setup
+- [ ] `clone`
+- [ ] `bundle install`
+- [ ] `rake command to grab add data in the database `
 
-* Configuration
-
-* Database creation
-
-* Database initialization
-
-* How to run the test suite
-
-* Services (job queues, cache servers, search engines, etc.)
-
-* Deployment instructions
-
-* ...
+## API ENDPOINTS
+- Endpoints go here 

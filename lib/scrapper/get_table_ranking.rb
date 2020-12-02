@@ -49,7 +49,7 @@ module Scrapper
 
     def team_players_info
       raw_player_data = teams_names.map do |team_info|
-        fetch_team_data(team_info[:team_id], team_info[:teams_name_slug])
+        fetch_squad_team_data(team_info[:team_id], team_info[:teams_name_slug])
       end
 
       raw_player_data.flat_map do |data|
@@ -60,29 +60,51 @@ module Scrapper
             single_player_info[:player_name] = player.css('span.playerCardInfo h4.name')[0].children[0].text
             single_player_info[:team_id] = data[1]
           end
-          single_player_info if !single_player_info.empty?
+          single_player_info if single_player_info.size > 0
         end.compact
       end
     end
 
+    # Get Team Squad Information
+    def collect_teams_data
+      @team_data ||= teams_names.map do |team_info|
+        connect_clubs_data(team_info[:team_id], team_info[:teams_name_slug], "directory")
+      end
+
+      @team_data.reduce([]) do |team_data, raw_data |
+        hash = {}
+        club_header = raw_data.css(".clubHero.clubColourBg")
+        hash[:team_logo] = club_header.css(".clubDetailsContainer .badgeContainer picture").first.children[1].attributes["srcset"].value.prepend("https:")
+        hash[:team_name] = club_header.css(".clubDetailsContainer .clubDetails").first.children[1].children.first.text
+        hash[:manager_name] = raw_data.css(".directoryCards .col-6.col-6-m .card .cardBody")[0].children[1].children.first.text
+        hash[:id] = club_header[0].attributes["data-id"].value.to_i
+        team_data << hash
+      end
+
+    end
+
+    def db_import_team
+      database_import(Team, collect_teams_data)
+    end
+
     private
 
-    def connect_clubs_squad(team_id, team_name_slug)
-      route = "https://www.premierleague.com/clubs/#{team_id}/#{team_name_slug}/squad"
+    def connect_clubs_data(team_id, team_name_slug, final_endpoint)
+      route = "https://www.premierleague.com/clubs/#{team_id}/#{team_name_slug}/#{final_endpoint}"
       html = open(route)
       Nokogiri::HTML(html)
     end
 
-    def fetch_team_data(team_id, team_name_slug)
-      [connect_clubs_squad(team_id, team_name_slug).css("ul.squadListContainer li" ), team_id] # To have the team Id for the players
+    def fetch_squad_team_data(team_id, team_name_slug, final_endpoint= "squad")
+      [connect_clubs_data(team_id, team_name_slug, final_endpoint).css("ul.squadListContainer li" ), team_id] # To have the team Id for the players
     end
 
-    def fetch_raw_squad_years(team_id, team_name_slug)
-      connect_clubs_squad(team_id, team_name_slug).css("div.current ul.dropdownList li")
+    def fetch_raw_squad_years(team_id, team_name_slug, final_endpoint)
+      connect_clubs_data(team_id, team_name_slug, final_endpoint).css("div.current ul.dropdownList li")
     end
 
-    def teams_names
-      all_table_data.map do |child|
+    def teams_names # move to base
+      @slug ||= all_table_data.map do |child|
         {
             team_id: child.attributes['data-filtered-table-row'].value.to_i,
             teams_name_slug: child.children[5].css('a span.long')[0].children[0].text.gsub(" ", "-")
@@ -90,7 +112,7 @@ module Scrapper
       end
     end
 
-    def all_table_data
+    def all_table_data # Move to base
       route = "https://www.premierleague.com/tables"
       html = open(route)
       main_doc = Nokogiri::HTML(html)
@@ -103,6 +125,18 @@ module Scrapper
 
       data.select.with_index do |_, index|
         index.even? || index.zero?
+      end
+    end
+
+    def database_import(object, data) # helper method to import data to a database
+      teams = data.map do |object_data|
+        object.new(object_data)
+      end
+      begin
+        object.import(teams)
+        p "success"
+      rescue => e
+        p e
       end
     end
   end
