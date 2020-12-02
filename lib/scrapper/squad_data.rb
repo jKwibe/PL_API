@@ -1,11 +1,10 @@
 require 'activerecord-import'
+require_relative './base'
 module Scrapper
-  class Scrape
+  class Scrape < Base
 
     def fetch_table_data
-      valid_tr = all_table_data
-
-      valid_tr.map do |child|
+      all_table_data.map do |child|
         {
           team_id: child.attributes['data-filtered-table-row'].value.to_i,
           position: child.children[3].children[1].children[0].text,
@@ -22,7 +21,7 @@ module Scrapper
     end
 
     def team_players_info
-      raw_player_data = teams_names.map do |team_info|
+      raw_player_data = team_slug_gen.map do |team_info|
         fetch_squad_team_data(team_info[:team_id], team_info[:teams_name_slug])
       end
 
@@ -41,7 +40,7 @@ module Scrapper
 
     # Get Team Squad Information
     def collect_teams_data
-      @team_data ||= teams_names.map do |team_info|
+      @team_data ||= team_slug_gen.map do |team_info|
         connect_clubs_data(team_info[:team_id], team_info[:teams_name_slug], "directory")
       end
 
@@ -64,43 +63,12 @@ module Scrapper
 
     private
 
-    def connect_clubs_data(team_id, team_name_slug, final_endpoint)
-      route = "https://www.premierleague.com/clubs/#{team_id}/#{team_name_slug}/#{final_endpoint}"
-      html = open(route)
-      Nokogiri::HTML(html)
-    end
-
     def fetch_squad_team_data(team_id, team_name_slug, final_endpoint= "squad")
       [connect_clubs_data(team_id, team_name_slug, final_endpoint).css("ul.squadListContainer li" ), team_id] # To have the team Id for the players
     end
 
     def fetch_raw_squad_years(team_id, team_name_slug, final_endpoint)
       connect_clubs_data(team_id, team_name_slug, final_endpoint).css("div.current ul.dropdownList li")
-    end
-
-    def teams_names # move to base
-      @slug ||= all_table_data.map do |child|
-        {
-            team_id: child.attributes['data-filtered-table-row'].value.to_i,
-            teams_name_slug: child.children[5].css('a span.long')[0].children[0].text.gsub(" ", "-")
-        }
-      end
-    end
-
-    def all_table_data # Move to base
-      route = "https://www.premierleague.com/tables"
-      html = open(route)
-      main_doc = Nokogiri::HTML(html)
-
-      # Fetch table data from the route
-      data = main_doc.css('.allTablesContainer
-                            .wrapper.col-12  .tableContainer
-                            .table.wrapper table
-                            .tableBodyContainer.isPL tr')
-
-      data.select.with_index do |_, index|
-        index.even? || index.zero?
-      end
     end
 
     def database_import(object, data) # helper method to import data to a database
