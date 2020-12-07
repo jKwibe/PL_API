@@ -2,8 +2,6 @@ module Scrapper
   class Base
     MAIN_URL = "https://www.premierleague.com"
 
-    protected
-
     def connect_clubs_data(team_id, team_name_slug, final_endpoint)
       route = "#{MAIN_URL}/clubs/#{team_id}/#{team_name_slug}/#{final_endpoint}"
       html = open(route)
@@ -25,16 +23,17 @@ module Scrapper
       table_conn.select.with_index do |_, index|
         index.even? || index.zero?
       end
+    end
 
 
-      def team_slug_gen
-        @slug ||= all_table_data.map do |child|
-          {
-              team_id: child.attributes['data-filtered-table-row'].value.to_i,
-              teams_name_slug: child.children[5].css('a span.long')[0].children[0].text.gsub(" ", "-")
-          }
-        end
+    def team_slug_gen
+      @slug ||= all_table_data.map do |child|
+        {
+            team_id: child.attributes['data-filtered-table-row'].value.to_i,
+            teams_name_slug: child.children[5].css('a span.long')[0].children[0].text.gsub(" ", "-")
+        }
       end
     end
+
   end
 end
