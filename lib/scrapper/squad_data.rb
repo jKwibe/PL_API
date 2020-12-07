@@ -1,5 +1,5 @@
 require 'activerecord-import'
-require_relative './base'
+require_relative 'base'
 module Scrapper
   class Scrape < Base
 
@@ -29,8 +29,8 @@ module Scrapper
         data[0].map do |raw|
           single_player_info = {}
           raw.css('a.playerOverviewCard .squadPlayerHeader').each do |player|
-            single_player_info[:player_uid] = player.css('img')[0].attributes["data-player"].value
-            single_player_info[:player_name] = player.css('span.playerCardInfo h4.name')[0].children[0].text
+            single_player_info[:player_uid] = player.css('img')[0].attributes["data-player"].value.strip
+            single_player_info[:player_name] = player.css('span.playerCardInfo h4.name')[0].children[0].text.strip
             single_player_info[:team_id] = data[1]
           end
           single_player_info if single_player_info.size > 0
@@ -48,8 +48,8 @@ module Scrapper
         hash = {}
         club_header = raw_data.css(".clubHero.clubColourBg")
         hash[:team_logo] = club_header.css(".clubDetailsContainer .badgeContainer picture").first.children[1].attributes["srcset"].value.prepend("https:")
-        hash[:team_name] = club_header.css(".clubDetailsContainer .clubDetails").first.children[1].children.first.text
-        hash[:manager_name] = raw_data.css(".directoryCards .col-6.col-6-m .card .cardBody")[0].children[1].children.first.text
+        hash[:team_name] = club_header.css(".clubDetailsContainer .clubDetails").first.children[1].children.first.text.strip
+        hash[:manager_name] = raw_data.css(".directoryCards .col-6.col-6-m .card .cardBody")[0].children[1].children.first.text.strip
         hash[:id] = club_header[0].attributes["data-id"].value.to_i
         team_data << hash
       end
